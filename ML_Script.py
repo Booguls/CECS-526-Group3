@@ -5,10 +5,13 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 
+DATA_LOCATION = 'Data\\adult.csv'
+SETTING_LOCATION = 'data_settings.txt'
+
 #Function to read settings from data_settings.txt file, starting at line 4
 def read_settings():
     settings = {}
-    with open('data_settings.txt') as f:
+    with open(SETTING_LOCATION) as f:
         raw_settings = []
         for line in f.readlines()[4:]:
             entry = line.strip().split(':')
@@ -26,11 +29,11 @@ def read_settings():
 
 ######################################################## INITIAL SETUP SECTION ######################################################
 ##This section establishes a label encoder object, multi-layer perceptron object, and performs the initial training of the ML model##
-census_data = pd.read_csv("Data\\adult.csv")    #read data from csv file, store it as a dataframe object
+census_data = pd.read_csv(DATA_LOCATION)    #read data from csv file, store it as a dataframe object
 df = pd.DataFrame(census_data)
 
 col_labels = []     #we will store the column labels of our data in col_labels
-with open('data_settings.txt') as f:    #open the data_settings text file
+with open(SETTING_LOCATION) as f:    #open the data_settings text file
     lines = f.readlines()       #read all lines and store it in a list object called 'lines'
     col_labels = lines[0].split(':')[1].strip().split(',')  #read first line of data_settings and clean it to have our column labels, then store it in col_labels
 
@@ -50,10 +53,7 @@ mlp_clf = MLPClassifier(**params)   #submit the settings as a dictionary of para
 mlp_clf.fit(X_train, y_train)   #train the machine learning model with our training sets
 ############################################################ END OF SETUP ##########################################################
 
-
 if __name__ == '__main__':
     mlp_score = mlp_clf.score(X_test, y_test)*100
     print('Multi-Layer Perceptron accuracy score with default settings:', mlp_score)
     read_settings()
-    with open('data_settings.txt') as f:
-        pass
