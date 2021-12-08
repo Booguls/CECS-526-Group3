@@ -1,9 +1,12 @@
 import numpy as np
 import pandas as pd
+import os
+import time
 
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
+from multiprocessing import Process
 
 DATA_LOCATION = 'Data\\adult.csv'
 SETTING_LOCATION = 'data_settings.txt'
@@ -13,7 +16,7 @@ def read_settings():
     settings = {}
     with open(SETTING_LOCATION) as f:
         raw_settings = []
-        for line in f.readlines()[4:]:
+        for line in f.readlines()[3:]:
             entry = line.strip().split(':')
             raw_settings.append(entry[0])
             if '.' in entry[1]:
@@ -26,6 +29,26 @@ def read_settings():
             raw_settings.append(entry[1])
         settings = {raw_settings[i]:raw_settings[i+1] for i in range(0, len(raw_settings), 2)}
     return settings
+
+def file_check():
+    print('Hello from within thread:', os.getpid())
+    latest_settings = read_settings()
+    while True:
+        current_settings = read_settings()
+        print('Settings read, no changes made...')
+        if latest_settings != current_settings:
+            print('Mismatched detected! Updating settings...')
+            latest_settings = current_settings
+            adjust_model(latest_settings)
+
+        time.sleep(2)
+
+def adjust_model(params: dict):
+    global mlp_clf, X_train, X_test, y_train, y_test
+    mlp_clf = MLPClassifier(**params)
+    mlp_clf.fit(X_train, y_train)
+    mlp_score = mlp_clf.score(X_test, y_test)*100
+    print('Accuracy score after adjusting settings:', mlp_score)
 
 ######################################################## INITIAL SETUP SECTION ######################################################
 ##This section establishes a label encoder object, multi-layer perceptron object, and performs the initial training of the ML model##
@@ -56,4 +79,11 @@ mlp_clf.fit(X_train, y_train)   #train the machine learning model with our train
 if __name__ == '__main__':
     mlp_score = mlp_clf.score(X_test, y_test)*100
     print('Multi-Layer Perceptron accuracy score with default settings:', mlp_score)
-    read_settings()
+    watchdog = Process(target=file_check)
+    watchdog.start()
+    watchdog.join()
+    print('done')
+    #create thread which determines if change has been made, if so then flip a boolean var / something similar
+    #upon flipping variable, main thread updates ML model with new parameters, then flips boolean var again
+    #NOTE: keep main thread executing at all times so container doesnt die
+    #use multithreading join() function to prevent death of process, if join() doesn't work then look for alternatives
