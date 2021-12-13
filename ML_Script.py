@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from multiprocessing import Process
 
-DATA_LOCATION = 'Data\\adult.csv'
+DATA_LOCATION = 'Data/adult.csv'
 SETTING_LOCATION = 'data_settings.txt'
 
 #Function to read settings from data_settings.txt file, starting at line 4
